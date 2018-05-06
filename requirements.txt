@@ -1,0 +1,4 @@
+requests==2.18.4
+yattag==1.10.0
+easydict==1.7
+tqdm==4.23.2

@@ -1,0 +1,15 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook
+*.ipynb_checkpoints
+
+# Personal data
+pages/content_page_*
+configuration.py
+*.html
+
+# PyCharm
+.idea
