@@ -9,26 +9,29 @@
 
 1. Clone this repository
 
-```bash
-cd /path/to/anywhere/you/like
-git clone https://github.com/zengyu714/weibo-backup
-```
-Now the directory looks like
-```bash
-.
-├── README.md
-├── configuration.example.py
-├── main.py
-├── requirements.txt
-├── pages [empty directory]
-└── demo [demo directory]
-```
+    ```bash
+    cd /path/to/anywhere/you/like
+    git clone https://github.com/zengyu714/weibo-backup
+    ```
+    Now the directory looks like
     
-2. Install Dependencies
+    ```bash
+    .
+    ├── README.md
+    ├── configuration.example.py
+    ├── main.py
+    ├── requirements.txt
+    ├── demo  [directory]
+    └── pages [directory]
+        └── README.md
+ 
+    ```
+    
+2. Install dependencies
 
-```python
-pip install -r requirements.txt
-```
+    ```python
+    pip install -r requirements.txt
+    ```
 
 ### Running
 1. 修改配置文件`configuration.example.py`
@@ -51,13 +54,13 @@ pip install -r requirements.txt
         `CONFIG.cookie = `'**your_cookie**'
         
 1. 将配置文件名称由`configuration.example.py`改成`configuration.py`
-```bash
-mv configuration.example.py configuration.py
-```
+    ```bash
+    mv configuration.example.py configuration.py
+    ```
 1. 运行`main.py`脚本
-```python
-    python main.py
-```
+    ```python
+        python main.py
+    ```
 
 **Note**
 + 生成`pages`文件夹保存微博json文件
