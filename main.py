@@ -114,6 +114,7 @@ def generate_html():
                         contents = json_data['data']['cards']
                     else:
                         print('"%s" contains no "data" key' % json_data)
+                        continue
 
                 for card in contents:
                     # fix KeyError: 'mblog'
