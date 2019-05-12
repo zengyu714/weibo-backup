@@ -24,6 +24,8 @@
     ├── demo  [directory]
     └── pages [directory]
         └── README.md
+    └── articles [directory]
+    └── comments [directory]
  
     ```
     
@@ -66,13 +68,22 @@
 + 生成`pages`文件夹保存微博json文件
 + 生成**结果文件**`mblog_backup_<current_date>.html`,可以在浏览器打开并打印成PDF
 
-### What can this tool do?
+### TODO
 - [x] 对于长文(>140)，评论，点赞详情没有记录
 - [x] 优化备份页面排版
 - [X] 保存转载的微博
 - [X] 保存原创或转载长文
 - [ ] 备份页面html从单行分成多行
 - [x] 保存评论
+- [ ] 点赞(必要性似乎不大)
+
+### What can this tool do?
+- 保存基本信息
+- 保存所有原创微博内容
+- 保存所有转载微博内容
+- 保存所有评论
+- 保存原创或转载长文
+- 保存微博附加的图片
 
 ### License
 This project is licensed under the MIT License
