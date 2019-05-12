@@ -8,6 +8,10 @@ from yattag import Doc
 
 from configuration import CONFIG
 
+COMMENTS_URL = "https://m.weibo.cn/comments/hotflow?id=%s&mid=%s&max_id_type=0"
+
+ARTICLE_URL = "http://card.weibo.com/article/aj/articleshow?cid=%s&vid=%s"
+
 url_template = CONFIG.url_template + '&page={}'
 headers = {
     'User-Agent': CONFIG.user_agent,
@@ -30,23 +34,17 @@ def get_entries_num():
 
 
 def get_response_by_page_number(page_num):
-    return get_response(url_template.format(page_num))
+    return get_response(url_template.format(page_num)).json()
 
 
 def get_response(url):
-    requests_get = None
-    try:
-        if CONFIG.use_proxy:
-            proxy = random.choice(CONFIG.proxy_list)
-            print('Using proxy "%s" ...' % proxy)
-            requests_get = requests.get(url, headers=headers, proxies=proxy)
-            response = requests_get.json()
-        else:
-            requests_get = requests.get(url, headers=headers)
-            response = requests_get.json()
-        return response
-    except ValueError:
-        print('Error: Not json. Result of request: %s' % requests_get)
+    if CONFIG.use_proxy:
+        proxy = random.choice(CONFIG.proxy_list)
+        print('Using proxy "%s" ...' % proxy)
+        response = requests.get(url, headers=headers, proxies=proxy)
+    else:
+        response = requests.get(url, headers=headers)
+    return response
 
 
 def save_pages_json():
@@ -83,7 +81,16 @@ def save_comments_json(mblog, comments_json):
     with open('comments/comments_%s_%s' % (mblog['id'], mblog['mid']), 'w+') as f:
         json.dump(comments_json, f)
 
-    pass
+
+def save_article_json(article_json, user_id, cid):
+    """Create folder `./articles` to save json contents"""
+
+    # make directory
+    if not os.path.exists('articles'):
+        os.makedirs('articles')
+
+    with open('articles/articles_%s_%s' % (user_id, cid), 'w+') as f:
+        json.dump(article_json, f)
 
 
 def _parse_info(mblog):
@@ -174,16 +181,42 @@ def generate_html():
                             with tag('span', klass='mblog_image'):
                                 doc.stag('img', src=pic['url'], klass='span_image')
 
+                    # my article
+                    if 'page_info' in mblog:
+                        page_info = mblog['page_info']
+                        if 'page_url' in page_info:
+                            object_id = mblog['page_info']['object_id']
+                            if object_id is not None:
+                                object_ids = object_id.split(':')
+                                if len(object_ids) >= 2:
+                                    cid = object_ids[1]
+                                    user_id = mblog['user']['id']
+                                    article_json_filename = 'articles_%s_%s' % (user_id, cid)
+                                    if os.path.exists("articles") \
+                                            and article_json_filename in os.listdir("articles"):
+                                        with open("articles/" + article_json_filename, 'r') as f:
+                                            response = json.loads(f.read())
+                                    else:
+                                        response = get_response(ARTICLE_URL % (cid, user_id)).json()
+                                        save_article_json(response, user_id, cid)
+
+                                    if response['msg'] == 'ok' and 'data' in response:
+                                        doc.asis("<div>Article:</div>")
+                                        data = response['data']
+                                        article_text = data['article']
+                                        with tag('div', klass='article_text'):
+                                            doc.asis(article_text)
+
                     # comments
                     if mblog['comments_count'] > 0:
-                        comment_json_filename = "comments_%s_%s" % (mblog['id'], mblog['mid']);
-                        if comment_json_filename in os.listdir('comments'):
+                        comment_json_filename = "comments_%s_%s" % (mblog['id'], mblog['mid'])
+                        if os.path.exists('comments') \
+                                and comment_json_filename in os.listdir('comments'):
                             with open("comments/" + comment_json_filename, 'r') as f:
                                 response = json.loads(f.read())
                         else:
-                            comments_url = "https://m.weibo.cn/comments/hotflow?id=%s&mid=%s&max_id_type=0" \
-                                           % (mblog['id'], mblog['mid'])
-                            response = get_response(comments_url)
+                            comments_url = COMMENTS_URL % (mblog['id'], mblog['mid'])
+                            response = get_response(comments_url).json()
                             # Save all comments json files to avoid to retrieve comments data from Weibo
                             # whether has comment or not
                             save_comments_json(mblog, response)
