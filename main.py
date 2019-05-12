@@ -4,7 +4,6 @@ import json
 import random
 
 import requests
-from tqdm import tqdm
 from yattag import Doc
 
 from configuration import CONFIG
@@ -19,11 +18,28 @@ proxy_list = CONFIG.proxy_list
 
 def get_entries_num():
     """Get total num of weibo entries"""
-    response = requests.get(url_template.format(1),
-                            headers=headers,
-                            proxies=random.choice(proxy_list)).json()
-    entries_nums = response['data']['cardlistInfo']['total']
-    return entries_nums
+    response = get_response_by_page_number(1)
+
+    if 'data' in response:
+        data = response['data']
+        entries_nums = data['cardlistInfo']['total']
+        return entries_nums
+    else:
+        print('"%s" contains no "data"' % response)
+        exit(-1)
+
+
+def get_response_by_page_number(page_num):
+    if CONFIG.use_proxy:
+        proxy = random.choice(CONFIG.proxy_list)
+        print('Using proxy "%s" ...' % proxy)
+        response = requests.get(url_template.format(page_num),
+                                headers=headers,
+                                proxies=proxy).json()
+    else:
+        response = requests.get(url_template.format(page_num),
+                                headers=headers).json()
+    return response
 
 
 def save_pages_json():
@@ -39,10 +55,9 @@ def save_pages_json():
     print('==> Saving {} entries (default {} pages)'.format(entries_num, pages_num))
 
     # make url requests
-    for page_i in tqdm(range(1, pages_num + 1)):
-        response = requests.get(url_template.format(page_i),
-                                headers=headers,
-                                proxies=random.choice(proxy_list)).json()
+    for page_i in range(1, pages_num + 1):
+        print('Processing page: %d' % page_i)
+        response = get_response_by_page_number(page_i)
 
         with open('pages/content_page_{:03d}'.format(page_i), 'w+') as f:
             json.dump(response, f)
@@ -57,7 +72,11 @@ def _parse_info(mblog):
         'source'         : mblog['source'],
         'create_time'    : mblog['created_at'],
         'mid'            : mblog['mid'],
-        'text'           : mblog['text'],
+        'text'           : mblog['text']
+                            # remove escape characters
+                            .replace('\\', '')
+                            # fix invalidated url issue
+                            .replace('//h5.sinaimg', 'https://h5.sinaimg'),
         'comments_count' : mblog['comments_count'],
         'attitudes_count': mblog['attitudes_count'],
         'is_long'        : mblog['isLongText']
@@ -90,8 +109,17 @@ def generate_html():
 
             for p in pages:
                 with open(p, 'r') as f:
-                    contents = json.loads(f.read())['data']['cards']
+                    json_data = json.loads(f.read())
+                    if 'data' in json_data:
+                        contents = json_data['data']['cards']
+                    else:
+                        print('"%s" contains no "data" key' % json_data)
+
                 for card in contents:
+                    # fix KeyError: 'mblog'
+                    if 'mblog' not in card:
+                        continue
+
                     mblog = card['mblog']
                     info = _parse_info(mblog)
 
@@ -104,7 +132,10 @@ def generate_html():
                                 info['name'], info['create_time'], info['source']))
                     # text
                     with tag('div', klass='mblog_text'):
-                        text(mblog['text'])
+                        # Use doc.asis() to add html, See: https://www.yattag.org/
+                        doc.asis(info['text'])
+                        # retweet TODO
+
                     # image
                     if 'pics' in mblog:
                         for pic in mblog['pics']:
@@ -115,6 +146,7 @@ def generate_html():
 
                     # TODO: enable parse details
                     # details = _parse_details(info) if info['is_long'] or info['comments_count'] else None
+                    # print('details: "%s"' % details)
     backup = doc.getvalue()
     with open('mblog_backup_{}.html'.format(
             time.strftime("%Y%m%d", time.localtime())), 'w+', encoding='utf-8') as f:
@@ -122,8 +154,11 @@ def generate_html():
 
 
 def main():
-    # save_pages_json()
+    if CONFIG.model == 'save_json_first':
+        save_pages_json()
+
     generate_html()
+    print("Done")
 
 
 if __name__ == '__main__':
