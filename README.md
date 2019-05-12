@@ -65,8 +65,10 @@
     ```
 
 **Note**
-+ 生成`pages`文件夹保存微博json文件
-+ 生成**结果文件**`mblog_backup_<current_date>.html`,可以在浏览器打开并打印成PDF
++ 自动生成`pages`文件夹保存微博json文件
++ 自动生成`articles`文件夹保存原创或转载文章json文件
++ 自动生成`comments`文件夹保存微博评论json文件
++ 自动生成**结果文件**`mblog_backup_<current_date>.html`,可以在浏览器打开并打印成PDF
 
 ### TODO
 - [x] 对于长文(>140)，评论，点赞详情没有记录
