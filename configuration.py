@@ -21,7 +21,7 @@ CONFIG.proxy_list = [{"http": "116.8.83.3:8118"},
 # Whether use proxy
 CONFIG.use_proxy = True
 
-# '1' means to retrieve data from Weibo and save as json in 'pages' folder first
+# 'save_json_first' means to retrieve data from Weibo and save as json in 'pages' folder first
 # CONFIG.model = 'save_json_first'
 
 # Set CONFIG.model to '' to skip to retrieve data from Weibo
