@@ -71,7 +71,7 @@
 - [x] 优化备份页面排版
 - [ ] 保存转载的微博
 - [ ] 备份页面html从单行分成多行
-- [ ] 评论
+- [x] 保存评论
 
 ### License
 This project is licensed under the MIT License
