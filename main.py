@@ -30,16 +30,23 @@ def get_entries_num():
 
 
 def get_response_by_page_number(page_num):
-    if CONFIG.use_proxy:
-        proxy = random.choice(CONFIG.proxy_list)
-        print('Using proxy "%s" ...' % proxy)
-        response = requests.get(url_template.format(page_num),
-                                headers=headers,
-                                proxies=proxy).json()
-    else:
-        response = requests.get(url_template.format(page_num),
-                                headers=headers).json()
-    return response
+    return get_response(url_template.format(page_num))
+
+
+def get_response(url):
+    requests_get = None
+    try:
+        if CONFIG.use_proxy:
+            proxy = random.choice(CONFIG.proxy_list)
+            print('Using proxy "%s" ...' % proxy)
+            requests_get = requests.get(url, headers=headers, proxies=proxy)
+            response = requests_get.json()
+        else:
+            requests_get = requests.get(url, headers=headers)
+            response = requests_get.json()
+        return response
+    except ValueError:
+        print('Error: Not json. Result of request: %s' % requests_get)
 
 
 def save_pages_json():
@@ -64,6 +71,19 @@ def save_pages_json():
 
         # randomly sleep [0, 1] second
         time.sleep(random.random())
+
+
+def save_comments_json(mblog, comments_json):
+    """Create folder `./comments` to save json contents"""
+
+    # make directory
+    if not os.path.exists('comments'):
+        os.makedirs('comments')
+
+    with open('comments/comments_%s_%s' % (mblog['id'], mblog['mid']), 'w+') as f:
+        json.dump(comments_json, f)
+
+    pass
 
 
 def _parse_info(mblog):
@@ -94,6 +114,18 @@ def _parse_details(info):
     detailed_header.update({'Referer': detailed_url})
     details = requests.get(detailed_url, headers=detailed_header).json()
     return details
+
+
+def has_comments(response):
+    if response is not None and 'data' in response and 'data' in response['data']:
+        comments = response['data']['data']
+        if len(comments) > 0:
+            return comments
+        else:
+            print("No comments, response for retrieve comments: %s" % response)
+    else:
+        print("No comments, response for retrieve comments: %s" % response)
+    return ""
 
 
 def generate_html():
@@ -142,6 +174,35 @@ def generate_html():
                         for pic in mblog['pics']:
                             with tag('span', klass='mblog_image'):
                                 doc.stag('img', src=pic['url'], klass='span_image')
+
+                    # comments
+                    if mblog['comments_count'] > 0:
+                        comment_json_filename = "comments_%s_%s" % (mblog['id'], mblog['mid']);
+                        if comment_json_filename in os.listdir('comments'):
+                            with open("comments/" + comment_json_filename, 'r') as f:
+                                response = json.loads(f.read())
+                        else:
+                            comments_url = "https://m.weibo.cn/comments/hotflow?id=%s&mid=%s&max_id_type=0" \
+                                           % (mblog['id'], mblog['mid'])
+                            response = get_response(comments_url)
+                            # Save all comments json files to avoid to retrieve comments data from Weibo
+                            # whether has comment or not
+                            save_comments_json(mblog, response)
+
+                        comments = has_comments(response)
+                        if len(comments) > 0:
+                            doc.asis("<div>评论：</div>")
+                            for comment in comments:
+                                with tag('div', klass='comment_basic_info'):
+                                    doc.asis('<a href="{}">{}</a> @ {}'.format(
+                                        comment['user']['profile_url'],
+                                        comment['user']['screen_name'],
+                                        comment['created_at']))
+
+                                comment_text = comment['text']
+                                with tag('div', klass='comments_text'):
+                                    doc.asis(comment_text)
+
                     # deliminator
                     doc.stag('hr')
 
