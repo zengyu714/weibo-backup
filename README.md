@@ -66,10 +66,11 @@
 + 生成`pages`文件夹保存微博json文件
 + 生成**结果文件**`mblog_backup_<current_date>.html`,可以在浏览器打开并打印成PDF
 
-### Contributions
+### What can this tool do?
 - [x] 对于长文(>140)，评论，点赞详情没有记录
 - [x] 优化备份页面排版
-- [ ] 保存转载的微博
+- [X] 保存转载的微博
+- [X] 保存原创或转载长文
 - [ ] 备份页面html从单行分成多行
 - [x] 保存评论
 
