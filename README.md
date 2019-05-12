@@ -78,6 +78,7 @@
 - [ ] 备份页面html从单行分成多行
 - [x] 保存评论
 - [ ] 点赞
+- [ ] 超长转载微博不完整显示，可通过 https://m.weibo.cn/status/retweeted_status_id 获取完整内容
 
 ### What can this tool do?
 - 保存基本信息
