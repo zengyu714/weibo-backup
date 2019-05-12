@@ -18,7 +18,7 @@
     ```bash
     .
     ├── README.md
-    ├── configuration.example.py
+    ├── configuration.py
     ├── main.py
     ├── requirements.txt
     ├── demo  [directory]
@@ -34,7 +34,7 @@
     ```
 
 ### Running
-1. 修改配置文件`configuration.example.py`
+1. 修改配置文件`configuration.py`
     + `CONFIG.url_template`
         1. 登录微博[触屏版](https://m.weibo.cn/)
             ![image](demo/get_url.jpg)
@@ -53,10 +53,10 @@
         3. 将复制得到的`Cookie`粘贴到
         `CONFIG.cookie = `'**your_cookie**'
         
-1. 将配置文件名称由`configuration.example.py`改成`configuration.py`
-    ```bash
-    mv configuration.example.py configuration.py
-    ```
+1. 注意看`configuration.py`中的参数配置，适时调整参数
++ 一般的，首次使用时，应将CONFIG.model改为'save_json_first'
++ 从微博获取的数据会以json格式保存在pages文件夹中，所以之后应将CONFIG.model设置为空即''
++ 如不想使用代理，将CONFIG.use_proxy设置为False
 1. 运行`main.py`脚本
     ```python
         python main.py
@@ -69,6 +69,9 @@
 ### Contributions
 - [x] 对于长文(>140)，评论，点赞详情没有记录
 - [x] 优化备份页面排版
+- [ ] 保存转载的微博
+- [ ] 备份页面html从单行分成多行
+- [ ] 评论
 
 ### License
 This project is licensed under the MIT License
