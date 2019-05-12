@@ -167,7 +167,6 @@ def generate_html():
                     with tag('div', klass='mblog_text'):
                         # Use doc.asis() to add html, See: https://www.yattag.org/
                         doc.asis(info['text'])
-                        # retweet TODO
 
                     # image
                     if 'pics' in mblog:
@@ -202,6 +201,26 @@ def generate_html():
                                 comment_text = comment['text']
                                 with tag('div', klass='comments_text'):
                                     doc.asis(comment_text)
+
+                    # retweet
+                    if 'retweeted_status' in mblog:
+                        doc.asis("<div>转载内容：</div>")
+                        retweet = mblog['retweeted_status']
+                        if 'user' in retweet and retweet['user'] is not None:
+                            profile_url = retweet['user']['profile_url']
+                            screen_name = retweet['user']['screen_name']
+                        else:
+                            profile_url = ""
+                            screen_name = "Failed to retrieve user name"
+
+                        with tag('div', klass='retweet_info'):
+                            doc.asis('@<a href="{}">{}</a> @ {}'.format(
+                                profile_url,
+                                screen_name,
+                                retweet['created_at']))
+
+                        with tag('div', klass='retweet_text'):
+                            doc.asis(retweet['text'])
 
                     # deliminator
                     doc.stag('hr')
